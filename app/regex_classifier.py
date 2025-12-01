@@ -20,7 +20,7 @@ class RegexClassifier:
         # Rules are ordered by priority: most specific first
         self.rules = [
             
-            # ==================== AUTHENTICATION FAILURE ====================
+            #  AUTHENTICATION FAILURE 
             # High-priority auth failure patterns
             (re.compile(
                 r"(?:failed login|login failed|authentication failed|"
@@ -31,7 +31,7 @@ class RegexClassifier:
                 re.I
             ), "authentication_failure", 1.0),
             
-            # ==================== AUTHENTICATION SUCCESS ====================
+            # AUTHENTICATION SUCCESS 
             # High-priority auth success patterns
             (re.compile(
                 r"(?:success(?:ful(?:ly)?)? authenticat(?:ed|ion)|"
@@ -42,7 +42,7 @@ class RegexClassifier:
                 re.I
             ), "authentication_success", 1.0),
             
-            # ==================== SECURITY ALERT ====================
+            # SECURITY ALERT 
             # Security takes priority over other categories
             (re.compile(
                 r"(?:security alert|unauthorized access|"
@@ -55,7 +55,7 @@ class RegexClassifier:
                 re.I
             ), "security_alert", 1.0),
             
-            # ==================== API ERROR ====================
+            # API ERROR 
             # Specific API errors (before generic API requests)
             (re.compile(
                 r"(?:api (?:error|exception|crash(?:ed)?|timeout)|"
@@ -67,7 +67,7 @@ class RegexClassifier:
                 re.I
             ), "api_error", 0.95),
             
-            # ==================== DATABASE ERROR ====================
+            # DATABASE ERROR 
             # Specific database errors
             (re.compile(
                 r"(?:database (?:connection (?:refused|failed)|unreachable|error|migration failed)|"
@@ -80,7 +80,7 @@ class RegexClassifier:
                 re.I
             ), "database_error", 0.95),
             
-            # ==================== RESOURCE EXHAUSTION ====================
+            # RESOURCE EXHAUSTION 
             (re.compile(
                 r"(?:out of memory|oom(?:[ -]killed)?|"
                 r"memory (?:allocation failure|exhaustion|critically low)|"
@@ -95,7 +95,7 @@ class RegexClassifier:
                 re.I
             ), "resource_exhaustion", 0.95),
             
-            # ==================== FILESYSTEM ERROR ====================
+            # FILESYSTEM ERROR 
             (re.compile(
                 r"(?:filesystem (?:error|inconsisten(?:cy|t))|"
                 r"(?:disk quota|no space left|permission denied)|"
@@ -106,7 +106,7 @@ class RegexClassifier:
                 re.I
             ), "filesystem_error", 0.95),
             
-            # ==================== NETWORK ERROR ====================
+            # NETWORK ERROR 
             (re.compile(
                 r"(?:network (?:unreachable|timeout|congestion|error)|"
                 r"connection (?:reset|refused|aborted)|"
@@ -121,7 +121,7 @@ class RegexClassifier:
                 re.I
             ), "network_error", 0.95),
             
-            # ==================== SERVICE TIMEOUT ====================
+            # SERVICE TIMEOUT 
             (re.compile(
                 r"(?:(?:request|service|operation|connection|task|health probe) (?:timed out|timeout)|"
                 r"timeout (?:contacting|accessing|after|reaching)|"
@@ -131,7 +131,7 @@ class RegexClassifier:
                 re.I
             ), "service_timeout", 0.95),
             
-            # ==================== CONFIGURATION ERROR ====================
+            # CONFIGURATION ERROR 
             (re.compile(
                 r"(?:configuration (?:error|mismatch|missing)|"
                 r"(?:missing|invalid|unknown|unsupported) (?:key|field|parameter|configuration)|"
@@ -143,9 +143,7 @@ class RegexClassifier:
                 re.I
             ), "configuration_error", 0.95),
             
-            # ==================== API REQUEST ====================
-            # Generic API requests (lowest priority in API category)
-            # Only matches if it's clearly a request initiation
+            # API REQUEST 
             (re.compile(
                 r"(?:incoming request|"
                 r"(?:GET|POST|PUT|DELETE|PATCH|OPTIONS|HEAD) (?:/|\\w+/).*(?:initiated|received|from|processed|started|check executed))",

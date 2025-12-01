@@ -140,11 +140,8 @@ Choose the MOST SPECIFIC category. If uncertain, use lower confidence (0.6-0.8).
             except Exception as e:
                 if attempt < self.max_retries - 1:
                     wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
-                    print(f"⚠️  LLM API error (attempt {attempt + 1}/{self.max_retries}): {e}")
-                    print(f"   Retrying in {wait_time}s...")
                     time.sleep(wait_time)
                 else:
-                    print(f"❌ LLM API failed after {self.max_retries} attempts: {e}")
                     return "unknown", 0.3, f"API Error: {str(e)}"
     
     def _parse_response(self, reply: str) -> Tuple[str, float, str]:
@@ -183,7 +180,7 @@ Choose the MOST SPECIFIC category. If uncertain, use lower confidence (0.6-0.8).
             # Couldn't parse JSON, try text extraction  
             pass
         except Exception as e:
-            print(f"⚠️  Error parsing LLM response: {e}")
+            pass
         
         return label, conf, explanation
     

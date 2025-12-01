@@ -24,11 +24,11 @@ class HybridClassifier:
         self.llm = LLMClassifier()
 
     def classify(self, raw_log: str) -> Dict[str, Any]:
-        # --- 0. Parse log ---
+        # Parse log 
         parsed = self.parser.parse(raw_log)
         message = parsed.get("message", raw_log)
 
-        # --- 1. Regex stage ---
+        # Regex stage 
         r_label, r_conf = self._safe_regex(message)
         if r_label is not None and r_conf >= settings.REGEX_CONFIDENCE:
             return {
@@ -38,7 +38,7 @@ class HybridClassifier:
                 "parsed": parsed,
             }
 
-        # --- 2. ML stage ---
+        # ML stage 
         ml_label, ml_conf = self.ml.predict(message)
         print("ML Label: ", ml_label)
         print("ML Confidence: ", ml_conf)
@@ -50,7 +50,7 @@ class HybridClassifier:
                 "parsed": parsed,
             }
 
-        # --- 3. LLM fallback ---
+        # LLM fallback 
         llm_label, llm_conf, explanation = self.llm.predict(message)
         return {
             "label": llm_label,
@@ -60,9 +60,7 @@ class HybridClassifier:
             "llm_explanation": explanation,
         }
 
-    # -----------------------------------------------------------
     # Internal helper: regex safety wrapper
-    # -----------------------------------------------------------
     def _safe_regex(self, message: str):
         """
         Ensures regex classifier returns (label, confidence)

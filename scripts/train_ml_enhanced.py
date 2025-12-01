@@ -28,9 +28,6 @@ def train(csv_path: str, text_col: str, label_col: str, model_type: str = 'logis
         label_col: Column name for labels
         model_type: 'logistic', 'random_forest', or 'gradient_boosting'
     """
-    print(f"\n{'='*60}")
-    print(f"🚀 Enhanced ML Training with Feature Engineering")
-    print(f"{'='*60}\n")
     
     # Load data
     df = pd.read_csv(csv_path)
@@ -39,32 +36,32 @@ def train(csv_path: str, text_col: str, label_col: str, model_type: str = 'logis
     texts = df[text_col].tolist()
     labels = df[label_col].tolist()
     
-    print(f"📊 Dataset: {len(texts)} samples across {len(set(labels))} classes")
-    print(f"Class distribution:\n{pd.Series(labels).value_counts()}\n")
+    print("Dataset: ", len(texts), "samples across", len(set(labels)), "classes")
+    print("Class distribution:\n", pd.Series(labels).value_counts())
     
-    # === Step 1: Generate Sentence Embeddings ===
-    print("🔤 Generating sentence embeddings...")
+    # Step 1: Generate Sentence Embeddings
+    print("Generating sentence embeddings...")
     encoder = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     embeddings = encoder.encode(texts, show_progress_bar=True)
-    print(f"   ✓ Embeddings shape: {embeddings.shape}")
+    print("Embeddings shape: ", embeddings.shape)
     
-    # === Step 2: Extract Handcrafted Features ===
-    print("\n🔧 Extracting domain-specific features...")
+    # Step 2: Extract Handcrafted Features
+    print("Extracting domain-specific features...")
     feature_extractor = LogFeatureExtractor()
     handcrafted_features = feature_extractor.extract_batch(texts)
-    print(f"   ✓ Handcrafted features shape: {handcrafted_features.shape}")
-    print(f"   ✓ Feature names: {feature_extractor.get_feature_names()[:10]}... (+{len(feature_extractor.get_feature_names())-10} more)")
+    print("Handcrafted features shape: ", handcrafted_features.shape)
+    print("Feature names: ", feature_extractor.get_feature_names()[:10], "... (+", len(feature_extractor.get_feature_names())-10, " more)")
     
-    # === Step 3: Combine Features ===
-    print("\n🔗 Combining embeddings + handcrafted features...")
+    #   Step 3: Combine Features
+    print("Combining embeddings + handcrafted features...")
     X_combined = np.hstack([embeddings, handcrafted_features])
-    print(f"   ✓ Combined feature shape: {X_combined.shape}")
+    print("Combined feature shape: ", X_combined.shape)
     
-    # === Step 4: Encode Labels ===
+    # Step 4: Encode Labels
     le = LabelEncoder()
     y = le.fit_transform(labels)
     
-    # === Step 5: Train/Test Split ===
+    #    Step 5: Train/Test Split
     num_classes = len(set(y))
     min_test_ratio = max(num_classes * 2, 20) / len(y)  # At least 2 samples per class
     test_size = max(0.2, min_test_ratio)
@@ -73,19 +70,19 @@ def train(csv_path: str, text_col: str, label_col: str, model_type: str = 'logis
         X_combined, y, test_size=test_size, random_state=42, stratify=y
     )
     
-    print(f"\n📑 Split: {len(X_train)} train, {len(X_val)} validation")
+    print("Split: ", len(X_train), "train, ", len(X_val), "validation")
     
-    # === Step 6: Handle Class Imbalance ===
+    #    Step 6: Handle Class Imbalance
     class_weights = class_weight.compute_class_weight(
         'balanced',
         classes=np.unique(y_train),
         y=y_train
     )
     class_weight_dict = dict(enumerate(class_weights))
-    print(f"\n⚖️  Class weights: {class_weight_dict}")
+    print("Class weights: ", class_weight_dict)
     
-    # === Step 7: Train Model ===
-    print(f"\n🏋️  Training {model_type} model...")
+    #   Step 7: Train Model
+    print("Training", model_type, "model...")
     
     if model_type == 'logistic':
         model = LogisticRegression(
@@ -115,42 +112,36 @@ def train(csv_path: str, text_col: str, label_col: str, model_type: str = 'logis
         raise ValueError(f"Unknown model type: {model_type}")
     
     model.fit(X_train, y_train)
-    print("   ✓ Training completed!")
+    print("Training completed!")
     
-    # === Step 8: Cross-Validation ===
-    print("\n📊 Running 5-fold cross-validation...")
+    #    Step 8: Cross-Validation
+    print("Running 5-fold cross-validation...")
     cv_scores = cross_val_score(model, X_train, y_train, cv=min(5, len(set(y_train))), n_jobs=-1)
-    print(f"   ✓ CV Accuracy: {cv_scores.mean():.3f} (+/- {cv_scores.std() * 2:.3f})")
+    print("CV Accuracy: ", cv_scores.mean(), " (+/- ", cv_scores.std() * 2, ")")
     
-    # === Step 9: Validation Performance ===
+    #    Step 9: Validation Performance
     preds = model.predict(X_val)
-    print("\n" + "="*60)
-    print("📈 VALIDATION PERFORMANCE")
-    print("="*60 + "\n")
+    print("Validation Performance")
     print(classification_report(y_val, preds, target_names=le.classes_))
     
-    print("\n" + "="*60)
-    print("🔢 CONFUSION MATRIX")
-    print("="*60 + "\n")
+    print("Confusion Matrix")
     print(confusion_matrix(y_val, preds))
     
-    # === Step 10: Save Model ===
+    #    Step 10: Save Model
     os.makedirs(os.path.dirname(settings.LR_MODEL_PATH), exist_ok=True)
     os.makedirs(os.path.dirname(settings.LABEL_ENCODER_PATH), exist_ok=True)
     
     with open(settings.LR_MODEL_PATH, "wb") as f:
         pickle.dump(model, f)
-    print(f"\n💾 Model saved to: {settings.LR_MODEL_PATH}")
+    print("Model saved to: ", settings.LR_MODEL_PATH)
     
     with open(settings.LABEL_ENCODER_PATH, "wb") as f:
         pickle.dump(le, f)
-    print(f"💾 Label encoder saved to: {settings.LABEL_ENCODER_PATH}")
+    print("Label encoder saved to: ", settings.LABEL_ENCODER_PATH)
     
-    # === Step 11: Feature Importance (if available) ===
+    #    Step 11: Feature Importance (if available)
     if hasattr(model, 'feature_importances_'):
-        print("\n" + "="*60)
-        print("🎯 TOP 20 MOST IMPORTANT FEATURES")
-        print("="*60 + "\n")
+        print("TOP 20 MOST IMPORTANT FEATURES")
         
         # Combine feature names
         embedding_names = [f'embed_{i}' for i in range(embeddings.shape[1])]
@@ -162,9 +153,7 @@ def train(csv_path: str, text_col: str, label_col: str, model_type: str = 'logis
         for i, idx in enumerate(indices):
             print(f"{i+1:2d}. {all_feature_names[idx]:30s} : {importances[idx]:.4f}")
     
-    print("\n" + "="*60)
-    print("✅ Training Complete!")
-    print("="*60 + "\n")
+    print("Training Complete!")
 
 
 if __name__ == "__main__":

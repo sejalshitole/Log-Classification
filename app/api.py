@@ -25,9 +25,7 @@ app.add_middleware(
 classifier = HybridClassifier()
 
 
-# ---------------------------------------------------------
 # Single Log Classification
-# ---------------------------------------------------------
 @app.post("/classify", response_model=LogResponse)
 def classify_log(request: LogRequest):
     result = classifier.classify(request.log)
@@ -40,9 +38,7 @@ def classify_log(request: LogRequest):
     )
 
 
-# ---------------------------------------------------------
 # Batch Classification (CSV upload)
-# ---------------------------------------------------------
 @app.post("/classify_csv", response_model=List[BatchLogResponseItem])
 async def classify_csv(file: UploadFile = File(...), log_column: str = "log"):
 
